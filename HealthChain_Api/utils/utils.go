@@ -28,16 +28,17 @@ func GenerateJWT(user models.User) (string, error) {
 	return token.SignedString(JwtKey)
 }
 
-func ParseJWT(tokenString string) (*Claims, error) {
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return JwtKey, nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	if !token.Valid {
-		return nil, jwt.ErrSignatureInvalid
-	}
-	return claims, nil
-}
+//
+//func ParseJWT(tokenString string) (*Claims, error) {
+//	claims := &Claims{}
+//	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+//		return JwtKey, nil
+//	})
+//	if err != nil {
+//		return nil, err
+//	}
+//	if !token.Valid {
+//		return nil, jwt.ErrSignatureInvalid
+//	}
+//	return claims, nil
+//}

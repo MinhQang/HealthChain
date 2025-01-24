@@ -1,6 +1,7 @@
-package user
+package controllers
 
 import (
+	"HealthChain_API/middleware"
 	"HealthChain_API/models"
 	"HealthChain_API/utils"
 	"encoding/json"
@@ -8,6 +9,11 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 )
+
+type OTPRequest struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
+}
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	var credentials struct {
@@ -66,4 +72,18 @@ func Register(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
+}
+
+func VerifyOTPController(w http.ResponseWriter, r *http.Request) {
+	var otpRequest OTPRequest
+	if err := json.NewDecoder(r.Body).Decode(&otpRequest); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	if middleware.VerifyOTP(otpRequest.Email, otpRequest.OTP) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OTP verified successfully"))
+	} else {
+		http.Error(w, "OTP verification failed", http.StatusUnauthorized)
+	}
 }

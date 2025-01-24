@@ -1,19 +1,14 @@
-package user
+package controllers
 
 import (
 	"HealthChain_API/config"
 	"HealthChain_API/models"
+	"HealthChain_API/utils"
 	"encoding/json"
-	"fmt"
 	//"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
-	"math/rand"
 	"net/http"
-	"net/smtp"
-	"time"
 )
-
-var otpMap = map[string]string{}
 
 func ForgotPwController(w http.ResponseWriter, r *http.Request) {
 	var request struct {
@@ -32,10 +27,10 @@ func ForgotPwController(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	otp := generateOTP()
-	otpMap[user.Email] = otp
+	otp := utils.GenerateOTP()
+	utils.OtpMap[user.Email] = otp
 
-	err = sendEmail(user.Email, otp)
+	err = utils.SendEmail(user.Email, otp)
 	if err != nil {
 		http.Error(w, "Lỗi khi gửi email", http.StatusInternalServerError)
 		return
@@ -43,25 +38,6 @@ func ForgotPwController(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"otp": "đã được gửi tới email"})
-}
-
-func generateOTP() string {
-	rand.Seed(time.Now().UnixNano())
-	otp := rand.Intn(1000000)
-	return fmt.Sprintln("%06d", otp)
-}
-
-func sendEmail(email string, otp string) error {
-	from := "your-email@example.com"
-	password := "your-email-password"
-
-	msg := "Subject: Reset Password OTP\n\nYour OTP is: " + otp
-	smtpHost := "smtp.example.com"
-	smtpPort := "587"
-
-	auth := smtp.PlainAuth("", from, password, smtpHost)
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, []string{email}, []byte(msg))
-	return err
 }
 
 func ResetPwController(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +51,7 @@ func ResetPwController(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Yêu cầu không hợp lệ", http.StatusBadRequest)
 		return
 	}
-	storedOTP, exists := otpMap[request.Email]
+	storedOTP, exists := utils.OtpMap[request.Email]
 	if !exists || storedOTP != request.OTP {
 		http.Error(w, "OTP không hợp lệ", http.StatusUnauthorized)
 		return
@@ -91,7 +67,7 @@ func ResetPwController(w http.ResponseWriter, r *http.Request) {
 	user.Password = hashPassword(request.NewPW)
 	config.DB.Save(&user)
 
-	delete(otpMap, request.Email) // Xóa OTP sau khi sử dụng
+	delete(utils.OtpMap, request.Email) // Xóa OTP sau khi sử dụng
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Password reset successful"})
