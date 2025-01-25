@@ -28,7 +28,6 @@ func GenerateJWT(user models.User) (string, error) {
 	return token.SignedString(JwtKey)
 }
 
-//
 //func ParseJWT(tokenString string) (*Claims, error) {
 //	claims := &Claims{}
 //	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {

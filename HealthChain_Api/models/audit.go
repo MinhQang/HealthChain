@@ -1,7 +1,6 @@
 package models
 
 import (
-	"HealthChain_API/config"
 	"time"
 )
 
@@ -13,7 +12,7 @@ type Audit struct {
 	Details   string    `gorm:"type:text"`
 }
 
-func CreateAudit(audit *Audit) error {
-	audit.Timestamp = time.Now()
-	return config.DB.Create(audit).Error
-}
+//func CreateAudit(audit *Audit) error {
+//	audit.Timestamp = time.Now()
+//	return config.DB.Create(audit).Error
+//}
